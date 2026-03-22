@@ -1,0 +1,245 @@
+/* Basic styling for the Search Marketing Simulation game */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f7f9fc;
+  color: #333;
+}
+
+.login-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.login-container h1 {
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.login-forms {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.login-section {
+  flex: 1;
+  min-width: 250px;
+  max-width: 350px;
+  background-color: #f1f5fa;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+form label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="number"],
+form select,
+form textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+form button {
+  margin-top: 15px;
+  padding: 10px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+form button:hover {
+  background-color: #0056b3;
+}
+
+.footer-note {
+  margin-top: 20px;
+  font-size: 0.85em;
+  color: #666;
+}
+
+/* Admin and Group pages */
+
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.header button {
+  padding: 8px 12px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.header button:hover {
+  background-color: #c82333;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th,
+table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+table th {
+  background-color: #007bff;
+  color: #fff;
+}
+
+table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.button-primary {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button-primary:hover {
+  background-color: #0056b3;
+}
+
+.status-ready {
+  color: green;
+  font-weight: bold;
+}
+
+.status-pending {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.section {
+  margin-top: 20px;
+}
+
+.keyword-table {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.keyword-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.keyword-table th,
+.keyword-table td {
+  padding: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+.results {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f1f5fa;
+  border-radius: 4px;
+  display: none;
+}
+
+.results.show {
+  display: block;
+}
+
+.flex-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 6px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+}
+
+.modal-content .close-btn {
+  float: right;
+  cursor: pointer;
+  font-size: 24px;
+  color: #666;
+}
+.modal-content .close-btn:hover {
+  color: #000;
+}
