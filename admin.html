@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard – Search Marketing Game</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Admin Dashboard</h1>
+      <button id="logoutBtn">Logout</button>
+      <button id="changeAdminPwdBtn" class="button-primary" style="margin-left:10px;">Change Password</button>
+    </div>
+    <div id="adminControls" class="section">
+      <button class="button-primary" id="createGroupBtn">Create Group</button>
+      <button class="button-primary" id="startRoundBtn">Start Game</button>
+      <button class="button-primary" id="nextRoundBtn" disabled>Next Round</button>
+      <button class="button-primary" id="overrideBtn">Override &amp; Next</button>
+      <span style="margin-left:15px;">Current Round: <span id="currentRoundDisplay">1</span></span>
+    </div>
+    <!-- Login Logs section -->
+    <div class="section">
+      <h2>Login Logs</h2>
+      <table id="logTable">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="section">
+      <h2>Group Status</h2>
+      <table id="groupsTable">
+        <thead>
+          <tr>
+            <th>Group Name</th>
+            <th>Round</th>
+            <th>Ready</th>
+            <th>Spend (SGD)</th>
+            <th>Sales (SGD)</th>
+            <th>Impressions</th>
+            <th>Clicks</th>
+            <th>ROI (%)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="section">
+      <h2>Leaderboard</h2>
+      <table id="leaderboardTable">
+        <thead>
+          <tr>
+            <th>Group Name</th>
+            <th>Total Spend (SGD)</th>
+            <th>Total Sales (SGD)</th>
+            <th>Total Impressions</th>
+            <th>Total Clicks</th>
+            <th>ROI (%)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal for creating a new group -->
+  <div id="createGroupModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <h3>Create New Group</h3>
+      <label for="newUsername">Username</label>
+      <input type="text" id="newUsername" placeholder="group name">
+      <label for="newPassword">Password</label>
+      <input type="password" id="newPassword" placeholder="password">
+      <button id="createGroupSubmit" class="button-primary" style="margin-top:15px;">Create</button>
+    </div>
+
+    <!-- Modal for changing group password -->
+    <div id="changeGroupPwdModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeChangeGroupPwdModal">&times;</span>
+        <h3>Change Group Password</h3>
+        <p id="changeGroupUserLabel"><strong>Group:</strong> </p>
+        <label for="groupNewPassword">New Password</label>
+        <input type="password" id="groupNewPassword" placeholder="new password">
+        <button id="confirmGroupPwdBtn" class="button-primary" style="margin-top:15px;">Update Password</button>
+      </div>
+    </div>
+
+    <!-- Modal for changing admin password -->
+    <div id="changeAdminPwdModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeChangeAdminPwdModal">&times;</span>
+        <h3>Change Admin Password</h3>
+        <label for="currentAdminPwd">Current Password</label>
+        <input type="password" id="currentAdminPwd" placeholder="current password">
+        <label for="newAdminPwd">New Password</label>
+        <input type="password" id="newAdminPwd" placeholder="new password">
+        <button id="confirmAdminPwdBtn" class="button-primary" style="margin-top:15px;">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
