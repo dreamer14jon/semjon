@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Marketing Game – Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Search Marketing Simulation</h1>
+    <!-- Unified login form for both admin and groups. The system will detect the user
+         type based on the credentials entered. -->
+    <div class="login-forms">
+      <div class="login-section" style="width:100%;">
+        <h2>Login</h2>
+        <form id="unifiedLoginForm">
+          <label for="usernameInput">Username</label>
+          <input type="text" id="usernameInput" required placeholder="Enter your username">
+          <label for="passwordInput">Password</label>
+          <input type="password" id="passwordInput" required placeholder="Enter your password">
+          <button type="submit">Login</button>
+        </form>
+        <p style="font-size:0.9em;margin-top:10px;">Use your group username/password or the admin credentials to log in.</p>
+      </div>
+    </div>
+    <p class="footer-note">This game is a teaching tool for students to learn the basics of search marketing.<br>Data is stored locally in your browser.</p>
+  </div>
+  <script src="js/common.js"></script>
+  <script>
+    // Unified login handling. Initialise default admin credentials if not set
+    (function () {
+      // Initialise admin credentials only once
+      const adminCred = localStorage.getItem('adminCredentials');
+      if (!adminCred) {
+        localStorage.setItem('adminCredentials', JSON.stringify({ username: 'admin', password: 'password' }));
+      }
+      /**
+       * Record a login event into localStorage. Logs include role, username and timestamp.
+       * @param {string} role "admin" or "group"
+       * @param {string} username
+       */
+      function recordLogin(role, username) {
+        const logs = JSON.parse(localStorage.getItem('loginLogs') || '[]');
+        logs.push({ role: role, username: username, timestamp: new Date().toISOString() });
+        localStorage.setItem('loginLogs', JSON.stringify(logs));
+      }
+      // Handle unified login form submission
+      document.getElementById('unifiedLoginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const username = document.getElementById('usernameInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        // Check admin credentials first
+        const creds = JSON.parse(localStorage.getItem('adminCredentials'));
+        if (username === creds.username && password === creds.password) {
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'admin', username: username }));
+          recordLogin('admin', username);
+          window.location.href = 'admin.html';
+          return;
+        }
+        // Check group credentials
+        const groups = JSON.parse(localStorage.getItem('groups') || '[]');
+        const group = groups.find(g => g.username === username && g.password === password);
+        if (group) {
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'group', username: username }));
+          recordLogin('group', username);
+          window.location.href = 'group.html';
+        } else {
+          alert('Invalid username or password');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
