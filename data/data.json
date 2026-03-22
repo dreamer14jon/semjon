@@ -1,0 +1,104 @@
+{
+  "keywords": [
+    {
+      "keyword": "online tuition",
+      "search_volume": 50000,
+      "cpc": 1.50,
+      "competition": "High",
+      "audience": "Students"
+    },
+    {
+      "keyword": "affordable laptop",
+      "search_volume": 40000,
+      "cpc": 2.00,
+      "competition": "Medium",
+      "audience": "Students"
+    },
+    {
+      "keyword": "study notes",
+      "search_volume": 30000,
+      "cpc": 0.80,
+      "competition": "Low",
+      "audience": "Students"
+    },
+    {
+      "keyword": "career development courses",
+      "search_volume": 45000,
+      "cpc": 2.50,
+      "competition": "High",
+      "audience": "Young Professionals"
+    },
+    {
+      "keyword": "professional attire",
+      "search_volume": 35000,
+      "cpc": 1.80,
+      "competition": "Medium",
+      "audience": "Young Professionals"
+    },
+    {
+      "keyword": "office supplies",
+      "search_volume": 38000,
+      "cpc": 1.50,
+      "competition": "Low",
+      "audience": "Young Professionals"
+    },
+    {
+      "keyword": "kids toys",
+      "search_volume": 45000,
+      "cpc": 1.20,
+      "competition": "Medium",
+      "audience": "Parents"
+    },
+    {
+      "keyword": "child education programs",
+      "search_volume": 30000,
+      "cpc": 2.00,
+      "competition": "High",
+      "audience": "Parents"
+    },
+    {
+      "keyword": "family vacations",
+      "search_volume": 25000,
+      "cpc": 3.00,
+      "competition": "High",
+      "audience": "Parents"
+    }
+  ],
+  "audiences": [
+    {
+      "name": "Students",
+      "description": "Secondary school and college students looking for study materials and affordable products",
+      "size": 100000
+    },
+    {
+      "name": "Young Professionals",
+      "description": "Young working adults seeking career development and professional products",
+      "size": 80000
+    },
+    {
+      "name": "Parents",
+      "description": "Parents interested in children’s products and family‑oriented services",
+      "size": 90000
+    }
+  ],
+  "landingPages": [
+    {
+      "id": "LP1",
+      "name": "Student Deals Page",
+      "description": "Showcases study materials and affordable tech products for students",
+      "audience": "Students"
+    },
+    {
+      "id": "LP2",
+      "name": "Career Progression Page",
+      "description": "Highlights professional courses, office supplies, and attire",
+      "audience": "Young Professionals"
+    },
+    {
+      "id": "LP3",
+      "name": "Family Offers Page",
+      "description": "Offers child education programs, toys, and family vacation packages",
+      "audience": "Parents"
+    }
+  ]
+}
