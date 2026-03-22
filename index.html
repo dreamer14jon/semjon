@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Marketing Game – Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Search Marketing Simulation</h1>
+    <div class="login-forms">
+      <div class="login-section">
+        <h2>Admin Login</h2>
+        <form id="adminLoginForm">
+          <label for="adminUsername">Username</label>
+          <input type="text" id="adminUsername" required placeholder="admin">
+          <label for="adminPassword">Password</label>
+          <input type="password" id="adminPassword" required placeholder="password">
+          <button type="submit">Login as Admin</button>
+        </form>
+      </div>
+      <div class="login-section">
+        <h2>Group Login</h2>
+        <form id="groupLoginForm">
+          <label for="groupUsername">Username</label>
+          <input type="text" id="groupUsername" required>
+          <label for="groupPassword">Password</label>
+          <input type="password" id="groupPassword" required>
+          <button type="submit">Login as Group</button>
+        </form>
+      </div>
+    </div>
+    <p class="footer-note">This game is a teaching tool for students to learn the basics of search marketing.<br>Data is stored locally in your browser.</p>
+  </div>
+  <script src="js/common.js"></script>
+  <script>
+    // Initialise default admin credentials if not present
+    (function () {
+      const adminCred = localStorage.getItem('adminCredentials');
+      if (!adminCred) {
+        localStorage.setItem('adminCredentials', JSON.stringify({ username: 'admin', password: 'password' }));
+      }
+      // Setup event listeners for login forms
+      document.getElementById('adminLoginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const username = document.getElementById('adminUsername').value.trim();
+        const password = document.getElementById('adminPassword').value;
+        const creds = JSON.parse(localStorage.getItem('adminCredentials'));
+        if (username === creds.username && password === creds.password) {
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'admin', username: username }));
+          window.location.href = 'admin.html';
+        } else {
+          alert('Invalid admin credentials');
+        }
+      });
+      document.getElementById('groupLoginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const username = document.getElementById('groupUsername').value.trim();
+        const password = document.getElementById('groupPassword').value;
+        const groups = JSON.parse(localStorage.getItem('groups') || '[]');
+        const group = groups.find(g => g.username === username && g.password === password);
+        if (group) {
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'group', username: username }));
+          window.location.href = 'group.html';
+        } else {
+          alert('Invalid group credentials');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
