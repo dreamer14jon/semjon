@@ -225,7 +225,7 @@
           <h3>Backend setup</h3>
           <div class="small muted">Only admins should set this. Students do not see it on the login page.</div>
           <label>Apps Script Web App URL</label>
-          <input id="apiBaseUrl" placeholder="https://script.google.com/macros/s/AKfycby3OVdJjccLZTrBFIj4bLFVclTJo84ZLPBcgZGXT5HXVLrze14d0kmd25QN7KrTDIoPtg/exec">
+          <input id="apiBaseUrl" placeholder="">
           <div class="row" style="margin-top:12px"><button class="light" onclick="saveApiUrl()">Save URL</button></div>
           <div class="note">Open the admin login directly by typing <strong>#admin</strong> after your page URL.</div>
         </div>
@@ -246,7 +246,7 @@
 </div>
 
 <script>
-const DEFAULT_API_URL = "";
+const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycby3OVdJjccLZTrBFIj4bLFVclTJo84ZLPBcgZGXT5HXVLrze14d0kmd25QN7KrTDIoPtg/exec";
 let state = { apiUrl:"", group:null, groupData:null, admin:null, adminData:null };
 let jsonpCounter = 0;
 
