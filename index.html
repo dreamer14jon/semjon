@@ -223,7 +223,7 @@
         </div>
         <div class="card" style="padding:12px">
           <h3>Backend setup</h3>
-          <div class="small muted">Only admins should set this. Students do not see it on the login page.</div>
+          <div class="small muted">Only admins should set this. Students do not see it on the login page. For the cleanest setup, hardcode the Apps Script /exec URL in DEFAULT_API_URL inside index.html before uploading to GitHub Pages.</div>
           <label>Apps Script Web App URL</label>
           <input id="apiBaseUrl" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec">
           <div class="row" style="margin-top:12px"><button class="light" onclick="saveApiUrl()">Save URL</button></div>
@@ -251,7 +251,8 @@ let state = { apiUrl:"", group:null, groupData:null, admin:null, adminData:null 
 let jsonpCounter = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
-  state.apiUrl = localStorage.getItem('simApiUrl') || DEFAULT_API_URL || "";
+  const urlFromQuery = new URLSearchParams(location.search).get('api') || '';
+  state.apiUrl = localStorage.getItem('simApiUrl') || urlFromQuery || DEFAULT_API_URL || "";
   if(document.getElementById('apiBaseUrl')) document.getElementById('apiBaseUrl').value = state.apiUrl;
   routeByHash();
 });
@@ -272,7 +273,8 @@ function saveApiUrl(){
   const url = (document.getElementById('apiBaseUrl').value||"").trim();
   localStorage.setItem('simApiUrl', url);
   state.apiUrl = url;
-  document.getElementById('adminLoginMsg').textContent = 'Apps Script URL saved for this browser.';
+  const target = document.getElementById('adminActionMsg') || document.getElementById('adminLoginMsg');
+  if(target) target.textContent = 'Apps Script URL saved for this browser.';
 }
 function getApiUrl(){
   return state.apiUrl || localStorage.getItem('simApiUrl') || DEFAULT_API_URL;
@@ -280,7 +282,7 @@ function getApiUrl(){
 function apiCall(action, payload={}){
   return new Promise((resolve, reject)=>{
     const apiUrl = getApiUrl();
-    if(!apiUrl){ reject(new Error('Missing Apps Script URL. Open Admin Login and save it first.')); return; }
+    if(!apiUrl || apiUrl === 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'){ reject(new Error('Apps Script URL is not configured yet. Paste your deployed /exec URL into DEFAULT_API_URL in index.html, or open the admin page with ?api=YOUR_URL and save it there.')); return; }
     const cb = '__jsonp_cb_' + (++jsonpCounter) + '_' + Date.now();
     const script = document.createElement('script');
     window[cb] = (resp) => { cleanup(); if(resp && resp.ok) resolve(resp.data); else reject(new Error(resp && resp.error ? resp.error : 'Unknown API error')); };
