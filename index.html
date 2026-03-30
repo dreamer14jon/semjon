@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SG Search Marketing Simulator</title>
+  <style>
+    :root{--bg:#f5f7fb;--card:#fff;--ink:#1f2937;--muted:#64748b;--brand:#0f766e;--brand2:#334155;--line:#dbe4ee;--danger:#b91c1c;--good:#166534;--warn:#92400e;--off:#b91c1c;--on:#166534}
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:1320px;margin:0 auto;padding:20px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .grid{display:grid;gap:16px}.grid-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:repeat(3,1fr)}.hidden{display:none !important}
+    .row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1}.row.no-flex>*{flex:0 0 auto}
+    h1,h2,h3{margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:12px}.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#e6fffb;color:#115e59;font-size:12px;font-weight:bold}
+    input,textarea,select,button{font:inherit} input,textarea,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
+    textarea{min-height:80px;resize:vertical} label{display:block;font-size:13px;font-weight:bold;margin:10px 0 6px}
+    button{border:0;border-radius:10px;padding:10px 14px;background:var(--brand);color:#fff;font-weight:bold;cursor:pointer} button.secondary{background:var(--brand2)} button.light{background:#e2e8f0;color:#0f172a} button.danger{background:var(--danger)} button:disabled{opacity:.55;cursor:not-allowed}
+    table{width:100%;border-collapse:collapse;font-size:14px} th,td{padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top} th{background:#f8fafc;font-size:12px;text-transform:uppercase;cursor:pointer}
+    .table-wrap{overflow:auto}.kpi{padding:12px;border:1px solid var(--line);border-radius:14px;background:#fcfffe}.kpi .v{font-size:22px;font-weight:bold;margin-top:4px}.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+    .planner-table input,.planner-table textarea,.planner-table select{min-width:140px}.planner-table textarea{min-height:54px}.note{font-size:12px;color:#64748b;margin-top:8px}
+    .status-on{background:#dcfce7;color:#166534}.status-off{background:#fee2e2;color:#b91c1c}.status-submitted{background:#eff6ff;color:#1d4ed8}
+    #loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,.7);display:none;align-items:center;justify-content:center;z-index:9999}.spinner{width:52px;height:52px;border:6px solid #cbd5e1;border-top-color:#0f766e;border-radius:50%;animation:spin 1s linear infinite}.loading-box{background:white;border-radius:16px;padding:24px 28px;border:1px solid var(--line);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:980px){.grid-2,.grid-3{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div id="loadingOverlay"><div class="loading-box"><div class="spinner"></div><div style="margin-top:12px;font-weight:bold">Processing...</div></div></div>
+<div class="wrap">
+  <div class="topbar">
+    <div><h1>SG Search Marketing Simulator</h1><div class="muted">GitHub Pages frontend for Google Sheets + Apps Script</div></div>
+    <div class="row no-flex"><button class="light" onclick="showScreen('groupLoginScreen')">Group Login</button></div>
+  </div>
+
+  <div id="groupLoginScreen" class="grid grid-2">
+    <div class="card">
+      <h2>Group Login</h2>
+      <label>Login ID</label><input id="groupLoginId" placeholder="group1">
+      <label>Password</label><input id="groupPassword" type="password" placeholder="pass123">
+      <div class="row no-flex" style="margin-top:12px"><button onclick="groupLogin()">Login</button></div>
+      <div id="groupLoginMsg" class="note"></div>
+    </div>
+    <div class="card">
+      <h3>How the simulator works</h3>
+      <ol class="small">
+        <li>There are <b>3 rounds</b>. Each round adds one more bag and more complexity.</li>
+        <li>Review the keyword database and ad copy guide before building your plan.</li>
+        <li>Choose keywords, landing page per keyword, write ad copy, and allocate budget.</li>
+        <li>When trial mode is on, you can test without affecting the official round.</li>
+        <li>When trial mode is off, click <b>Submit Round</b>. Admin will process submitted groups later.</li>
+      </ol>
+      <div class="note">Admin page is not shown here. Open it manually with <b>#admin</b> if needed.</div>
+    </div>
+  </div>
+
+  <div id="groupDashboard" class="hidden">
+    <div class="card">
+      <div class="section-title">
+        <div><h2 id="groupWelcome">Group Dashboard</h2><div id="groupSub" class="muted"></div></div>
+        <div class="row no-flex">
+          <span id="roundPill" class="pill">Round 1</span>
+          <span id="trialPill" class="pill status-on">Trial Mode ON</span>
+          <button class="light" onclick="logoutGroup()">Logout</button>
+        </div>
+      </div>
+      <div class="grid grid-3">
+        <div class="kpi"><div class="small muted">Budget</div><div class="v" id="budgetKpi">SGD 0</div></div>
+        <div class="kpi"><div class="small muted">Bag Focus</div><div class="v" id="bagKpi">-</div></div>
+        <div class="kpi"><div class="small muted">Bag Selling Price</div><div class="v" id="priceKpi">SGD 0</div></div>
+      </div>
+      <div class="note">Round 1 starts with Bag 1. Round 2 adds Bag 2. Round 3 adds Bag 3.</div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Group details</h3>
+        <div class="row"><div><label>Editable group name</label><input id="profileGroupName"></div><div><label>Class / tutorial / details</label><input id="profileDetails"></div></div>
+        <label>Student names (1 per line, up to 6)</label><textarea id="profileStudents"></textarea>
+        <div class="row no-flex" style="margin-top:12px"><button onclick="saveProfile()">Save profile</button></div>
+        <div id="profileMsg" class="note"></div>
+      </div>
+      <div class="card">
+        <h3>Current bag and audience</h3>
+        <div id="taHint" class="muted"></div>
+        <div style="margin-top:10px"><b>Potential audience size:</b> <span id="audienceKpi">-</span></div>
+        <h3 style="margin-top:14px">Landing page guidance</h3>
+        <div id="lpHint" class="muted"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-title"><div><h3>Ad copy guide</h3><div class="small muted">Use this as a guide when writing headline and description for each keyword.</div></div></div>
+      <div class="table-wrap"><table id="adCopyGuideTable"></table></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-title"><div><h3>Keyword database</h3><div class="small muted">Students see the planning data only. Diagnostics stay in admin view.</div></div></div>
+      <div class="row" style="margin-bottom:10px">
+        <div><input id="keywordSearch" placeholder="Search keyword text" oninput="renderKeywordTable()"></div>
+        <div><select id="themeFilter" onchange="renderKeywordTable()"></select></div>
+        <div><select id="audienceFilter" onchange="renderKeywordTable()"></select></div>
+        <div><select id="sortField" onchange="renderKeywordTable()"><option value="keyword">Sort: Keyword</option><option value="monthly_searches_sg">Sort: Searches</option><option value="avg_cpc_sgd">Sort: Avg CPC</option><option value="theme">Sort: Theme</option><option value="target_audience">Sort: Audience</option></select></div>
+        <div><select id="sortDir" onchange="renderKeywordTable()"><option value="asc">Ascending</option><option value="desc">Descending</option></select></div>
+      </div>
+      <div class="table-wrap"><table id="keywordsTable"></table></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="section-title"><div><h3>Build your search plan</h3><div class="small muted">Choose up to 6 keyword rows. Each row needs its own landing page, headline, description, and budget.</div></div><div><div class="small muted">Allocated budget</div><div id="budgetAllocated" style="font-weight:bold">SGD 0.00</div></div></div>
+      <label>Target audience notes</label><textarea id="taNotes" placeholder="Why does your setup fit the current bag and audience?"></textarea>
+      <div class="table-wrap" style="margin-top:12px"><table class="planner-table" id="planTable"></table></div>
+      <div class="row no-flex" style="margin-top:12px">
+        <button id="trialBtn" onclick="submitPlan('trial')">Run Trial</button>
+        <button id="officialBtn" onclick="submitPlan('official')">Submit Round</button>
+        <button class="light" onclick="backPreviousRound()">Back to Previous Round</button>
+        <button class="light" onclick="loadRoundData()">Refresh data</button>
+      </div>
+      <div id="submitMsg" class="note"></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Latest processed result</h3>
+        <div class="grid grid-3">
+          <div class="kpi"><div class="small muted">Spend</div><div class="v" id="resSpend">SGD 0.00</div></div>
+          <div class="kpi"><div class="small muted">Sales</div><div class="v" id="resSales">0</div></div>
+          <div class="kpi"><div class="small muted">ROI</div><div class="v" id="resRoi">0.00</div></div>
+          <div class="kpi"><div class="small muted">Impressions</div><div class="v" id="resImp">0</div></div>
+          <div class="kpi"><div class="small muted">Clicks</div><div class="v" id="resClk">0</div></div>
+          <div class="kpi"><div class="small muted">Revenue</div><div class="v" id="resRev">SGD 0.00</div></div>
+        </div>
+        <h3 style="margin-top:14px">Recommendation</h3><div id="resReco" class="muted">Submit and wait for admin processing to see official round results.</div>
+      </div>
+      <div class="card"><h3>Leaderboard</h3><div class="table-wrap"><table id="groupLeaderboardTable"></table></div></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Submitted plan review</h3>
+      <div class="note">This shows what your group submitted for the current round while waiting for admin processing, and later helps you compare decisions with keyword performance.</div>
+      <div class="table-wrap"><table id="submittedReviewTable"></table></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Per-keyword performance</h3>
+      <div class="table-wrap"><table id="keywordPerfTable"></table></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Group activity log</h3>
+      <div class="table-wrap"><table id="groupLogTable"></table></div>
+    </div>
+  </div>
+
+  <div id="adminLoginScreen" class="hidden grid grid-2">
+    <div class="card">
+      <h2>Admin Login</h2>
+      <label>Username</label><input id="adminUsername" value="admin"><label>Password</label><input id="adminPassword" type="password">
+      <div class="row no-flex" style="margin-top:12px"><button onclick="adminLogin()">Login</button></div>
+      <div id="adminLoginMsg" class="note"></div>
+    </div>
+    <div class="card">
+      <h3>Admin notes</h3>
+      <ul class="small">
+        <li>Use <b>Mark All as Submitted</b> to convert trial plans into official submissions where possible.</li>
+        <li>Use <b>Process Submitted Groups</b> when you are ready to release results and move submitted groups forward.</li>
+        <li>Reset only clears the current round.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="adminDashboard" class="hidden">
+    <div class="card">
+      <div class="section-title">
+        <div><h2>Admin Dashboard</h2><div id="trialStatusBadge" class="pill status-off">Trial Mode: OFF</div></div>
+        <div class="row no-flex"><button onclick="setTrialMode('ON')">Trial ON</button><button class="danger" onclick="setTrialMode('OFF')">Trial OFF</button><button class="light" onclick="logoutAdmin()">Logout</button></div>
+      </div>
+      <div class="row no-flex" style="margin-top:8px"><button class="secondary" onclick="markAllSubmitted()">Mark All as Submitted</button><button onclick="processSubmittedGroups()">Process Submitted Groups</button></div>
+      <div id="adminActionMsg" class="note"></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Create group</h3>
+        <label>Login ID</label><input id="newGroupLogin"><label>Password</label><input id="newGroupPassword"><label>Group name</label><input id="newGroupName">
+        <div class="row no-flex" style="margin-top:12px"><button onclick="createGroup()">Create Group</button></div>
+      </div>
+      <div class="card"><h3>Leaderboard</h3><div class="table-wrap"><table id="adminLeaderboardTable"></table></div></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Keyword diagnostics (admin only)</h3>
+      <div class="table-wrap"><table id="adminKeywordTable"></table></div>
+    </div>
+
+    <div class="card" style="margin-top:16px"><h3>Group overview</h3><div class="table-wrap"><table id="adminGroupsTable"></table></div></div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_API_URL = "";
+let state = { apiUrl:"", group:null, groupData:null, admin:null, adminData:null };
+let jsonpCounter = 0;
+
+const storage = {
+  saveGroup(){ localStorage.setItem('simGroupSession', JSON.stringify(state.group||null)); },
+  loadGroup(){ try{return JSON.parse(localStorage.getItem('simGroupSession')||'null')}catch(e){return null}},
+  clearGroup(){ localStorage.removeItem('simGroupSession'); },
+  saveAdmin(){ localStorage.setItem('simAdminSession', JSON.stringify(state.admin||null)); },
+  loadAdmin(){ try{return JSON.parse(localStorage.getItem('simAdminSession')||'null')}catch(e){return null}},
+  clearAdmin(){ localStorage.removeItem('simAdminSession'); }
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  state.apiUrl = localStorage.getItem('simApiUrl') || DEFAULT_API_URL || "";
+  state.group = storage.loadGroup();
+  state.admin = storage.loadAdmin();
+  routeByHash();
+  if(location.hash.toLowerCase()==='#admin' && state.admin){ try{ await loadAdminOverview(); showScreen('adminDashboard'); }catch(e){ storage.clearAdmin(); } }
+  else if(state.group){ try{ await loadRoundData(); showScreen('groupDashboard'); }catch(e){ storage.clearGroup(); } }
+});
+window.addEventListener('hashchange', routeByHash);
+
+function startLoading(){ document.getElementById('loadingOverlay').style.display='flex'; }
+function stopLoading(){ document.getElementById('loadingOverlay').style.display='none'; }
+function routeByHash(){ const h=(location.hash||'').toLowerCase(); if(h==='#admin') showScreen(state.admin?'adminDashboard':'adminLoginScreen'); else showScreen(state.group?'groupDashboard':'groupLoginScreen'); }
+function showScreen(id){ ['groupLoginScreen','groupDashboard','adminLoginScreen','adminDashboard'].forEach(x=>document.getElementById(x).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function getApiUrl(){ return state.apiUrl || localStorage.getItem('simApiUrl') || DEFAULT_API_URL; }
+function money(v){ return 'SGD ' + Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function num(v){ return Number(v||0).toLocaleString(); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function apiCall(action, payload={}){ return new Promise((resolve, reject)=>{ const apiUrl=getApiUrl(); if(!apiUrl){ reject(new Error('Missing Apps Script URL in the file.')); return; } const cb='__jsonp_cb_'+(++jsonpCounter)+'_'+Date.now(); const script=document.createElement('script'); window[cb]=(resp)=>{ cleanup(); if(resp&&resp.ok) resolve(resp.data); else reject(new Error(resp&&resp.error?resp.error:'Unknown API error')); }; function cleanup(){ delete window[cb]; if(script.parentNode) script.parentNode.removeChild(script);} const params=new URLSearchParams({action,callback:cb,payload:JSON.stringify(payload)}); script.src=apiUrl+(apiUrl.includes('?')?'&':'?')+params.toString(); script.onerror=()=>{ cleanup(); reject(new Error('Could not reach Apps Script URL.')); }; document.body.appendChild(script); }); }
+
+async function runAction(fn){ startLoading(); try{ await fn(); } finally{ stopLoading(); } }
+
+async function groupLogin(){ await runAction(async()=>{ const loginId=document.getElementById('groupLoginId').value.trim(); const password=document.getElementById('groupPassword').value.trim(); const msg=document.getElementById('groupLoginMsg'); msg.textContent='Logging in...'; state.group = await apiCall('groupLogin',{loginId,password}); storage.saveGroup(); msg.textContent=''; await loadRoundData(); showScreen('groupDashboard'); }); }
+function logoutGroup(){ state.group=null; state.groupData=null; storage.clearGroup(); showScreen('groupLoginScreen'); }
+async function saveProfile(){ await runAction(async()=>{ const students=document.getElementById('profileStudents').value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,6); const payload={ loginId:state.group.loginId,password:state.group.password,groupName:document.getElementById('profileGroupName').value.trim(),details:document.getElementById('profileDetails').value.trim(),students}; await apiCall('saveProfile', payload); document.getElementById('profileMsg').textContent='Profile saved.'; state.group.groupName = payload.groupName || state.group.groupName; storage.saveGroup(); await loadRoundData(); }); }
+function buildLandingOptions(){ return ['<option value="">Select landing page</option>'].concat((state.groupData?.landingPages||[]).map(lp=>`<option value="${esc(lp.landing_id)}">${esc(lp.landing_id)} - ${esc(lp.page_name)}</option>`)).join(''); }
+function buildPlanTable(){ const rows=[]; rows.push('<tr><th>#</th><th>Keyword</th><th>Landing Page</th><th>Budget (SGD)</th><th>Headline</th><th>Description</th></tr>'); const keywords=(state.groupData?.keywords||[]).map(k=>k.keyword); const kwOpts=['<option value="">Select keyword</option>'].concat(keywords.map(k=>`<option value="${esc(k)}">${esc(k)}</option>`)).join(''); const lpOpts=buildLandingOptions(); for(let i=0;i<6;i++){ rows.push(`<tr><td>${i+1}</td><td><select data-plan="keyword">${kwOpts}</select></td><td><select data-plan="landing_id">${lpOpts}</select></td><td><input data-plan="budget" type="number" min="0" step="10" oninput="updateBudgetAllocated()"></td><td><input data-plan="headline" placeholder="Headline"></td><td><textarea data-plan="description" placeholder="Description + CTA"></textarea></td></tr>`); } document.getElementById('planTable').innerHTML=rows.join(''); updateBudgetAllocated(); }
+function collectPlanRows(){ return Array.from(document.querySelectorAll('#planTable tr')).slice(1).map(tr=>{ const els=tr.querySelectorAll('[data-plan]'); return { keyword:els[0].value.trim(), landing_id:els[1].value.trim(), budget:Number(els[2].value||0), headline:els[3].value.trim(), description:els[4].value.trim() }; }).filter(r=>r.keyword||r.landing_id||r.budget||r.headline||r.description); }
+function updateBudgetAllocated(){ const total=collectPlanRows().reduce((a,b)=>a+(Number(b.budget)||0),0); document.getElementById('budgetAllocated').textContent=money(total); }
+function fillFilterOptions(){ const data=state.groupData?.keywords||[]; const themes=[...new Set(data.map(k=>String(k.theme||'').trim()).filter(Boolean))].sort(); const aud=[...new Set(data.map(k=>String(k.target_audience||'').trim()).filter(Boolean))].sort(); document.getElementById('themeFilter').innerHTML='<option value="">All themes</option>'+themes.map(v=>`<option value="${esc(v)}">Theme: ${esc(v)}</option>`).join(''); document.getElementById('audienceFilter').innerHTML='<option value="">All audiences</option>'+aud.map(v=>`<option value="${esc(v)}">Audience: ${esc(v)}</option>`).join(''); }
+function renderKeywordTable(){ let data=[...(state.groupData?.keywords||[])]; const q=(document.getElementById('keywordSearch').value||'').toLowerCase(); const theme=document.getElementById('themeFilter').value; const audience=document.getElementById('audienceFilter').value; const sortField=document.getElementById('sortField').value; const sortDir=document.getElementById('sortDir').value; data=data.filter(k=>{ const hit=!q || [k.keyword,k.theme,k.target_audience].join(' ').toLowerCase().includes(q); const okTheme=!theme || String(k.theme)===theme; const okAudience=!audience || String(k.target_audience)===audience; return hit && okTheme && okAudience; }); data.sort((a,b)=>{ let av=a[sortField], bv=b[sortField]; if(sortField==='monthly_searches_sg' || sortField==='avg_cpc_sgd'){ av=Number(av||0); bv=Number(bv||0); } else { av=String(av||'').toLowerCase(); bv=String(bv||'').toLowerCase(); } return sortDir==='asc' ? (av>bv?1:av<bv?-1:0) : (av<bv?1:av>bv?-1:0); }); let html='<tr><th>Keyword</th><th>Theme</th><th>Target Audience</th><th>Searches</th><th>Competition</th><th>Avg CPC</th></tr>'; data.forEach(k=> html += `<tr><td>${esc(k.keyword)}</td><td>${esc(k.theme)}</td><td>${esc(k.target_audience)}</td><td>${num(k.monthly_searches_sg)}</td><td>${esc(k.competition)}</td><td>${money(k.avg_cpc_sgd)}</td></tr>`); document.getElementById('keywordsTable').innerHTML=html; }
+function renderAdCopyGuide(){ const rows=state.groupData?.adCopyGuide||[]; let html='<tr><th>Element</th><th>What students should enter</th><th>Good example</th></tr>'; rows.forEach(r=> html += `<tr><td>${esc(r.Element)}</td><td>${esc(r['What students should enter'])}</td><td>${esc(r['Good example'])}</td></tr>`); document.getElementById('adCopyGuideTable').innerHTML=html; }
+function renderResult(result){ if(!result){ document.getElementById('keywordPerfTable').innerHTML='<tr><td>No processed result yet.</td></tr>'; return; } document.getElementById('resSpend').textContent=money(result.spend_sgd); document.getElementById('resSales').textContent=num(result.sales); document.getElementById('resRoi').textContent=Number(result.roi||0).toFixed(2); document.getElementById('resImp').textContent=num(result.impressions); document.getElementById('resClk').textContent=num(result.clicks); document.getElementById('resRev').textContent=money(result.revenue_sgd); document.getElementById('resReco').textContent=result.recommendation||''; let html='<tr><th>Keyword</th><th>Budget</th><th>Landing</th><th>Headline</th><th>Spend</th><th>Impressions</th><th>Clicks</th><th>Sales</th><th>Selling Price</th><th>Revenue</th></tr>'; (result.keyword_breakdown||[]).forEach(r=> html += `<tr><td>${esc(r.keyword)}</td><td>${money(r.budget_sgd)}</td><td>${esc(r.landing_name||r.landing_id)}</td><td>${esc(r.headline||'')}</td><td>${money(r.spend_sgd)}</td><td>${num(r.impressions)}</td><td>${num(r.clicks)}</td><td>${num(r.sales)}</td><td>${money(r.selling_price_sgd)}</td><td>${money(r.revenue_sgd)}</td></tr>`); document.getElementById('keywordPerfTable').innerHTML=html; }
+function renderSubmittedReview(plan){ if(!plan){ document.getElementById('submittedReviewTable').innerHTML='<tr><td>No submitted plan for the current round yet.</td></tr>'; return; } let html='<tr><th>Round</th><th>Bag</th><th>Keyword</th><th>Budget</th><th>Landing</th><th>Headline</th><th>Description</th><th>Selling Price</th></tr>'; plan.rows.forEach(r=> html += `<tr><td>${esc(plan.round)}</td><td>${esc(plan.bag)}</td><td>${esc(r.keyword)}</td><td>${money(r.budget_sgd)}</td><td>${esc(r.landing_name||r.landing_id)}</td><td>${esc(r.headline)}</td><td>${esc(r.description)}</td><td>${money(r.selling_price_sgd)}</td></tr>`); document.getElementById('submittedReviewTable').innerHTML=html; }
+function renderLeaderboard(tableId, leaderboard, includeStudents=true){ let html='<tr><th>Group</th>'+(includeStudents?'<th>Students</th>':'')+'<th>Rounds</th><th>Spend</th><th>Sales</th><th>Impressions</th><th>Clicks</th><th>ROI</th></tr>'; (leaderboard||[]).forEach(r=> html += `<tr><td>${esc(r.group_name||r.login_id)}</td>${includeStudents?`<td>${esc(r.students||'')}</td>`:''}<td>${esc(r.round||'')}</td><td>${money(r.spend_sgd||0)}</td><td>${num(r.sales||0)}</td><td>${num(r.impressions||0)}</td><td>${num(r.clicks||0)}</td><td>${Number(r.roi||0).toFixed(2)}</td></tr>`); document.getElementById(tableId).innerHTML=html; }
+function renderGroupLogs(logs){ let html='<tr><th>Timestamp</th><th>Round</th><th>Action</th><th>Details</th></tr>'; (logs||[]).forEach(r=> html += `<tr><td>${esc(r.timestamp)}</td><td>${esc(r.round)}</td><td>${esc(r.action)}</td><td>${esc(r.details||'')}</td></tr>`); document.getElementById('groupLogTable').innerHTML=html; }
+async function loadRoundData(){ await runAction(async()=>{ state.groupData = await apiCall('getRoundData',{loginId:state.group.loginId,password:state.group.password}); const gd=state.groupData; document.getElementById('groupWelcome').textContent=gd.groupName||gd.loginId; document.getElementById('groupSub').textContent=gd.students.length ? ('Students: '+gd.students.join(', ')) : 'Add student names for this group.'; document.getElementById('profileGroupName').value=gd.groupName||''; document.getElementById('profileDetails').value=gd.details||''; document.getElementById('profileStudents').value=(gd.students||[]).join('\n'); document.getElementById('roundPill').textContent = gd.currentRoundCompleted ? 'Completed' : ('Round ' + gd.roundInfo.round); const tp=document.getElementById('trialPill'); tp.textContent='Trial Mode: '+gd.trialMode; tp.className='pill ' + (gd.trialMode==='ON'?'status-on':'status-off'); document.getElementById('budgetKpi').textContent=money(gd.roundInfo.budget); document.getElementById('bagKpi').textContent=gd.roundInfo.bagFocus; document.getElementById('priceKpi').textContent=money(gd.roundInfo.price); document.getElementById('audienceKpi').textContent=num(gd.roundInfo.potentialAudienceSize); document.getElementById('taHint').textContent=gd.roundInfo.targetAudienceHint; document.getElementById('lpHint').textContent=gd.roundInfo.landingPageHint; fillFilterOptions(); renderKeywordTable(); renderAdCopyGuide(); buildPlanTable(); renderLeaderboard('groupLeaderboardTable', gd.leaderboard, false); renderSubmittedReview(gd.submittedPlan); renderResult(gd.latestProcessedResult); renderGroupLogs(gd.groupLogs); document.getElementById('trialBtn').classList.toggle('hidden', gd.trialMode !== 'ON' || gd.currentRoundCompleted); document.getElementById('officialBtn').classList.toggle('hidden', gd.trialMode === 'ON' || !!gd.submittedPlan || gd.currentRoundCompleted); document.getElementById('submitMsg').textContent = gd.submittedPlan ? ('Submitted Round ' + gd.submittedPlan.round + '. Waiting for admin to process submitted groups.') : (gd.trialMode==='ON' ? 'Trial mode is active. You can test without locking in the round.' : 'Trial is off. Submit the round for admin processing.'); }); }
+async function submitPlan(mode){ await runAction(async()=>{ const rows=collectPlanRows(); const taNotes=document.getElementById('taNotes').value.trim(); const msg=document.getElementById('submitMsg'); if(!rows.length){ msg.textContent='Add at least one keyword row.'; return; } const totalBudget=rows.reduce((a,b)=>a+(Number(b.budget)||0),0); const roundBudget=Number(state.groupData.roundInfo.budget||0); if(totalBudget<=0){ msg.textContent='Budget allocation must be above 0.'; return; } if(Math.abs(totalBudget-roundBudget)>0.01){ msg.textContent='Budget allocation must equal the round budget of '+money(roundBudget)+'.'; return; } const action = mode==='trial' ? 'submitTrial' : 'submitOfficial'; await apiCall(action,{loginId:state.group.loginId,password:state.group.password,taNotes,planRows:rows}); msg.textContent = mode==='trial' ? 'Trial saved and simulated.' : ('Submitted Round ' + state.groupData.roundInfo.round + '. Waiting for admin processing.'); await loadRoundData(); }); }
+async function backPreviousRound(){ await runAction(async()=>{ await apiCall('backPreviousRound',{loginId:state.group.loginId,password:state.group.password}); await loadRoundData(); document.getElementById('submitMsg').textContent='Moved back one round and cleared the now-removed current round data.'; }); }
+
+async function adminLogin(){ await runAction(async()=>{ const username=document.getElementById('adminUsername').value.trim(); const password=document.getElementById('adminPassword').value.trim(); const msg=document.getElementById('adminLoginMsg'); msg.textContent='Logging in...'; state.admin=await apiCall('adminLogin',{username,password}); storage.saveAdmin(); msg.textContent=''; await loadAdminOverview(); showScreen('adminDashboard'); }); }
+function logoutAdmin(){ state.admin=null; state.adminData=null; storage.clearAdmin(); showScreen('adminLoginScreen'); }
+function renderAdminKeywords(){ let html='<tr><th>Keyword</th><th>Theme</th><th>Audience</th><th>Searches</th><th>Avg CPC</th><th>Bag 1 Fit</th><th>Bag 2 Fit</th><th>Bag 3 Fit</th><th>Low Relevance</th></tr>'; (state.adminData.keywordDiagnostics||[]).forEach(k=> html += `<tr><td>${esc(k.keyword)}</td><td>${esc(k.theme)}</td><td>${esc(k.target_audience)}</td><td>${num(k.monthly_searches_sg)}</td><td>${money(k.avg_cpc_sgd)}</td><td>${Number(k.bag1_relevance||0).toFixed(2)}</td><td>${Number(k.bag2_relevance||0).toFixed(2)}</td><td>${Number(k.bag3_relevance||0).toFixed(2)}</td><td>${esc(k.low_relevance_flag)}</td></tr>`); document.getElementById('adminKeywordTable').innerHTML=html; }
+async function loadAdminOverview(){ await runAction(async()=>{ state.adminData=await apiCall('getAdminOverview', state.admin); const badge=document.getElementById('trialStatusBadge'); badge.textContent='Trial Mode: '+state.adminData.trialMode; badge.className='pill ' + (state.adminData.trialMode==='ON'?'status-on':'status-off'); renderLeaderboard('adminLeaderboardTable', state.adminData.leaderboard, true); renderAdminKeywords(); let html='<tr><th>Login</th><th>Group Name</th><th>Students</th><th>Round</th><th>Submitted?</th><th>Status</th><th>Recent Logs</th><th>Actions</th></tr>'; (state.adminData.groups||[]).forEach(g=>{ html += `<tr><td>${esc(g.loginId)}</td><td>${esc(g.groupName)}</td><td>${esc((g.students||[]).join(', '))}</td><td>${esc(g.currentRound)}</td><td>${g.submittedCurrentRound?'Yes':'No'}</td><td>${esc(g.status)}</td><td>${esc((g.recentLogs||[]).map(x=>x.timestamp+' '+x.action).join(' | '))}</td><td><button class="light" onclick="resetGroupCurrentRound('${esc(g.loginId)}')">Reset Current Round</button> <button class="light" onclick="backGroupOneRound('${esc(g.loginId)}')">Back 1 Round</button> <button class="danger" onclick="deleteGroup('${esc(g.loginId)}')">Delete</button></td></tr>`; }); document.getElementById('adminGroupsTable').innerHTML=html; }); }
+async function createGroup(){ await runAction(async()=>{ const payload=Object.assign({}, state.admin, { loginId:document.getElementById('newGroupLogin').value.trim(), passwordNew:document.getElementById('newGroupPassword').value.trim(), groupName:document.getElementById('newGroupName').value.trim() }); await apiCall('createGroup', payload); document.getElementById('adminActionMsg').textContent='Group created.'; await loadAdminOverview(); }); }
+async function deleteGroup(loginId){ if(!confirm('Delete '+loginId+'?')) return; await runAction(async()=>{ await apiCall('deleteGroup', Object.assign({}, state.admin, {loginId})); document.getElementById('adminActionMsg').textContent='Group deleted.'; await loadAdminOverview(); }); }
+async function resetGroupCurrentRound(loginId){ await runAction(async()=>{ await apiCall('resetGroupCurrentRound', Object.assign({}, state.admin, {loginId})); document.getElementById('adminActionMsg').textContent='Current round reset.'; await loadAdminOverview(); }); }
+async function backGroupOneRound(loginId){ await runAction(async()=>{ await apiCall('backGroupOneRound', Object.assign({}, state.admin, {loginId})); document.getElementById('adminActionMsg').textContent='Group moved back one round.'; await loadAdminOverview(); }); }
+async function setTrialMode(value){ await runAction(async()=>{ await apiCall('setTrialMode', Object.assign({}, state.admin, {value})); document.getElementById('adminActionMsg').textContent='Trial mode updated to '+value+'.'; await loadAdminOverview(); }); }
+async function markAllSubmitted(){ await runAction(async()=>{ const res=await apiCall('markAllSubmitted', state.admin); document.getElementById('adminActionMsg').textContent=`Marked ${res.marked} groups as submitted. Skipped ${res.skipped}.`; await loadAdminOverview(); }); }
+async function processSubmittedGroups(){ await runAction(async()=>{ const res=await apiCall('processSubmittedGroups', state.admin); document.getElementById('adminActionMsg').textContent=`Processed ${res.processed} groups. Skipped ${res.skipped}.`; await loadAdminOverview(); }); }
+</script>
+</body>
+</html>
