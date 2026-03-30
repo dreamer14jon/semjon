@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SG Search Marketing Simulator</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#ffffff; --ink:#1f2937; --muted:#6b7280;
+      --brand:#0f766e; --brand-2:#14b8a6; --line:#dbe4ee; --danger:#b91c1c;
+      --good:#166534; --warn:#92400e;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:1200px;margin:0 auto;padding:20px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    h1,h2,h3{margin:0 0 8px}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:16px}
+    .grid-2{grid-template-columns:1.1fr .9fr}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    label{display:block;font-size:13px;font-weight:bold;margin:10px 0 6px}
+    input,select,textarea,button{font:inherit}
+    input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
+    textarea{min-height:80px;resize:vertical}
+    button{border:0;border-radius:10px;padding:10px 14px;background:var(--brand);color:white;font-weight:bold;cursor:pointer}
+    button.secondary{background:#334155}
+    button.light{background:#e2e8f0;color:#0f172a}
+    button.danger{background:var(--danger)}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row > *{flex:1}
+    .pill{display:inline-block;padding:5px 10px;border-radius:999px;background:#e6fffb;color:#115e59;font-size:12px;font-weight:bold}
+    .hidden{display:none !important}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}
+    th{background:#f8fafc;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+    .kpi{padding:12px;border:1px solid var(--line);border-radius:14px;background:#fcfffe}
+    .kpi .v{font-size:24px;font-weight:bold;margin-top:4px}
+    .small{font-size:12px}
+    .right{text-align:right}
+    .status{font-size:12px;font-weight:bold}
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .danger{color:var(--danger)}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .footer-note{margin-top:10px;font-size:12px;color:#64748b}
+    @media (max-width:900px){
+      .grid-2,.grid-3{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>SG Search Marketing Simulator</h1>
+      <div class="muted">GitHub Pages frontend + Google Sheets + Apps Script starter</div>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="light" onclick="showScreen('groupLoginScreen')">Group Login</button>
+      <button class="secondary" onclick="showScreen('adminLoginScreen')">Admin Login</button>
+    </div>
+  </div>
+
+  <div id="apiSetupBanner" class="card">
+    <h3>1-time setup</h3>
+    <p class="muted">Paste your Apps Script Web App URL here after deployment. This stays only in this browser unless you hardcode it into the file.</p>
+    <div class="row">
+      <div style="flex:3">
+        <label>Apps Script Web App URL</label>
+        <input id="apiBaseUrl" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec" />
+      </div>
+      <div style="align-self:end;flex:1">
+        <button onclick="saveApiUrl()">Save URL</button>
+      </div>
+    </div>
+    <div class="footer-note">Tip: after testing, you can replace <code>const DEFAULT_API_URL = "";</code> in this HTML with your final URL.</div>
+  </div>
+
+  <div id="groupLoginScreen" class="grid grid-2">
+    <div class="card">
+      <h2>Group Login</h2>
+      <label>Login ID</label>
+      <input id="groupLoginId" placeholder="group1" />
+      <label>Password</label>
+      <input id="groupPassword" type="password" placeholder="pass123" />
+      <div class="row" style="margin-top:12px">
+        <button onclick="groupLogin()">Login</button>
+      </div>
+      <div id="groupLoginMsg" class="footer-note"></div>
+    </div>
+    <div class="card">
+      <h3>How students should use this</h3>
+      <ol class="small">
+        <li>Login with the group credentials from your tutor.</li>
+        <li>Update group name and student names.</li>
+        <li>Review keywords, target audience hints, and landing page options.</li>
+        <li>Choose keywords, one ad copy, and one landing page.</li>
+        <li>Submit the round to see performance and the leaderboard.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div id="groupDashboard" class="hidden">
+    <div class="card">
+      <div class="section-title">
+        <div>
+          <h2 id="groupWelcome">Group Dashboard</h2>
+          <div id="groupSub" class="muted"></div>
+        </div>
+        <div class="row" style="justify-content:flex-end">
+          <span id="roundPill" class="pill">Round 1</span>
+          <button class="light" onclick="logoutGroup()">Logout</button>
+        </div>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="kpi"><div class="small muted">Budget</div><div class="v" id="budgetKpi">SGD 0</div></div>
+        <div class="kpi"><div class="small muted">Bag Focus</div><div class="v" id="bagKpi">-</div></div>
+        <div class="kpi"><div class="small muted">Potential Audience Size</div><div class="v" id="audienceKpi">-</div></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Group details</h3>
+        <div class="row">
+          <div>
+            <label>Editable group name</label>
+            <input id="profileGroupName"/>
+          </div>
+          <div>
+            <label>Class / tutorial / details</label>
+            <input id="profileDetails"/>
+          </div>
+        </div>
+        <label>Student names (1 per line, up to 6)</label>
+        <textarea id="profileStudents"></textarea>
+        <div class="row" style="margin-top:12px">
+          <button onclick="saveProfile()">Save profile</button>
+        </div>
+        <div id="profileMsg" class="footer-note"></div>
+      </div>
+
+      <div class="card">
+        <h3>Target audience hint</h3>
+        <div id="taHint" class="muted"></div>
+        <h3 style="margin-top:14px">Landing page guidance</h3>
+        <div id="lpHint" class="muted"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Keyword database</h3>
+      <div class="table-wrap">
+        <table id="keywordsTable"></table>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Build your search plan</h3>
+        <label>Selected keywords (comma separated, use exact keyword text)</label>
+        <textarea id="selectedKeywords" placeholder="insulated lunch bag singapore, cute lunch bag singapore"></textarea>
+
+        <label>Ad copy option</label>
+        <select id="copySelect"></select>
+
+        <label>Landing page</label>
+        <select id="landingSelect"></select>
+
+        <label>Target audience notes</label>
+        <textarea id="taNotes" placeholder="Why this setup fits the bag and target audience"></textarea>
+
+        <div class="row" style="margin-top:12px">
+          <button onclick="submitRound()">Submit round</button>
+          <button class="light" onclick="loadRoundData()">Refresh data</button>
+        </div>
+        <div id="submitMsg" class="footer-note"></div>
+      </div>
+
+      <div class="card">
+        <h3>Current round result</h3>
+        <div class="grid grid-3">
+          <div class="kpi"><div class="small muted">Spend</div><div class="v" id="resSpend">SGD 0</div></div>
+          <div class="kpi"><div class="small muted">Sales</div><div class="v" id="resSales">0</div></div>
+          <div class="kpi"><div class="small muted">ROI</div><div class="v" id="resRoi">0%</div></div>
+          <div class="kpi"><div class="small muted">Impressions</div><div class="v" id="resImp">0</div></div>
+          <div class="kpi"><div class="small muted">Clicks</div><div class="v" id="resClk">0</div></div>
+          <div class="kpi"><div class="small muted">Revenue</div><div class="v" id="resRev">SGD 0</div></div>
+        </div>
+        <h3 style="margin-top:14px">Recommendation</h3>
+        <div id="resReco" class="muted">Submit a round to see feedback.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Per-keyword performance</h3>
+      <div class="table-wrap">
+        <table id="keywordPerfTable"></table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Leaderboard</h3>
+      <div class="table-wrap">
+        <table id="groupLeaderboardTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminLoginScreen" class="hidden grid grid-2">
+    <div class="card">
+      <h2>Admin Login</h2>
+      <label>Username</label>
+      <input id="adminUsername" value="admin" />
+      <label>Password</label>
+      <input id="adminPassword" type="password" />
+      <div class="row" style="margin-top:12px">
+        <button onclick="adminLogin()">Login</button>
+      </div>
+      <div id="adminLoginMsg" class="footer-note"></div>
+    </div>
+    <div class="card">
+      <h3>Admin can</h3>
+      <ul class="small">
+        <li>Create new groups</li>
+        <li>Delete groups</li>
+        <li>Reset a group's round</li>
+        <li>See leaderboard with student names</li>
+        <li>See each group's details and last actions</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="adminDashboard" class="hidden">
+    <div class="card">
+      <div class="section-title">
+        <div>
+          <h2>Admin Dashboard</h2>
+          <div class="muted">Manage groups and monitor performance</div>
+        </div>
+        <div class="row" style="justify-content:flex-end">
+          <button class="light" onclick="logoutAdmin()">Logout</button>
+          <button onclick="loadAdminOverview()">Refresh overview</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Create new group</h3>
+        <div class="row">
+          <div><label>Login ID</label><input id="newLoginId" placeholder="group4"/></div>
+          <div><label>Password</label><input id="newLoginPassword" placeholder="pass123"/></div>
+        </div>
+        <label>Group name</label>
+        <input id="newGroupName" placeholder="Group 4"/>
+        <div class="row" style="margin-top:12px">
+          <button onclick="createGroup()">Create group</button>
+        </div>
+        <div id="createGroupMsg" class="footer-note"></div>
+      </div>
+
+      <div class="card">
+        <h3>Reset or delete group</h3>
+        <label>Group login ID</label>
+        <input id="manageGroupId" placeholder="group2"/>
+        <div class="row" style="margin-top:12px">
+          <button class="secondary" onclick="resetGroupRound()">Reset round to 1</button>
+          <button class="danger" onclick="deleteGroup()">Delete group</button>
+        </div>
+        <div id="manageGroupMsg" class="footer-note"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Leaderboard overview</h3>
+      <div class="table-wrap">
+        <table id="adminLeaderboardTable"></table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Group details overview</h3>
+      <div class="table-wrap">
+        <table id="adminGroupsTable"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_API_URL = "";
+let apiUrl = localStorage.getItem("SIM_API_URL") || DEFAULT_API_URL;
+let groupSession = null;
+let adminSession = false;
+let currentRoundData = null;
+
+function init(){
+  document.getElementById("apiBaseUrl").value = apiUrl || "";
+  showScreen("groupLoginScreen");
+}
+function saveApiUrl(){
+  const url = document.getElementById("apiBaseUrl").value.trim();
+  localStorage.setItem("SIM_API_URL", url);
+  apiUrl = url;
+  alert("Apps Script URL saved.");
+}
+function showScreen(id){
+  ["groupLoginScreen","groupDashboard","adminLoginScreen","adminDashboard"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+function fmtCurrency(v){ return "SGD " + Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtPct(v){ return (Number(v||0)*100).toFixed(1) + "%"; }
+function escapeHtml(s){ return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+function apiCall(action, payload={}){
+  if(!apiUrl){ return Promise.reject(new Error("Please save the Apps Script Web App URL first.")); }
+  const params = new URLSearchParams({ action, payload: JSON.stringify(payload), callback: "__cb" + Date.now() + Math.floor(Math.random()*9999) });
+  const cbName = params.get("callback");
+  return new Promise((resolve,reject)=>{
+    const script = document.createElement("script");
+    window[cbName] = (data)=>{
+      resolve(data);
+      cleanup();
+    };
+    function cleanup(){
+      delete window[cbName];
+      script.remove();
+    }
+    script.onerror = ()=>{ reject(new Error("Could not reach Apps Script URL.")); cleanup(); };
+    script.src = apiUrl + "?" + params.toString();
+    document.body.appendChild(script);
+  });
+}
+
+async function groupLogin(){
+  try{
+    const res = await apiCall("loginGroup", {
+      loginId: document.getElementById("groupLoginId").value.trim(),
+      password: document.getElementById("groupPassword").value
+    });
+    if(!res.ok) throw new Error(res.error || "Login failed");
+    groupSession = res.data;
+    document.getElementById("groupLoginMsg").textContent = "Login successful.";
+    showScreen("groupDashboard");
+    await loadRoundData();
+  }catch(e){
+    document.getElementById("groupLoginMsg").textContent = e.message;
+  }
+}
+function logoutGroup(){ groupSession = null; showScreen("groupLoginScreen"); }
+
+async function loadRoundData(){
+  if(!groupSession) return;
+  try{
+    const res = await apiCall("getRoundData", { loginId: groupSession.loginId });
+    if(!res.ok) throw new Error(res.error || "Failed to load round data");
+    currentRoundData = res.data;
+    const g = currentRoundData.group;
+    const r = currentRoundData.round;
+    document.getElementById("groupWelcome").textContent = (g.group_name || g.login_id) + " Dashboard";
+    document.getElementById("groupSub").textContent = "Login ID: " + g.login_id;
+    document.getElementById("roundPill").textContent = "Round " + r.round;
+    document.getElementById("budgetKpi").textContent = fmtCurrency(r.budget);
+    document.getElementById("bagKpi").textContent = r.bagFocus;
+    document.getElementById("audienceKpi").textContent = (r.potentialAudienceSize || 0).toLocaleString();
+    document.getElementById("taHint").textContent = r.targetAudienceHint;
+    document.getElementById("lpHint").textContent = r.landingPageHint || "";
+
+    document.getElementById("profileGroupName").value = g.group_name || "";
+    document.getElementById("profileDetails").value = g.details || "";
+    document.getElementById("profileStudents").value = (g.students || []).filter(Boolean).join("\n");
+
+    renderKeywords(currentRoundData.keywords);
+    renderOptions(currentRoundData.adCopies, currentRoundData.landingPages);
+    renderResult(currentRoundData.latestResult);
+    renderLeaderboard("groupLeaderboardTable", currentRoundData.leaderboard, true);
+  }catch(e){
+    document.getElementById("submitMsg").textContent = e.message;
+  }
+}
+
+function renderKeywords(rows){
+  let html = "<thead><tr><th>Keyword</th><th>TA</th><th>Monthly Searches</th><th>Competition</th><th>Avg CPC</th><th>Relevance</th><th>Low Relevance</th></tr></thead><tbody>";
+  rows.forEach(r=>{
+    html += `<tr>
+      <td>${escapeHtml(r.keyword)}</td>
+      <td>${escapeHtml(r.target_audience)}</td>
+      <td>${Number(r.monthly_searches_sg||0).toLocaleString()}</td>
+      <td>${escapeHtml(r.competition)}</td>
+      <td>${fmtCurrency(r.avg_cpc_sgd)}</td>
+      <td>${(Number(r.relevance||0)*100).toFixed(0)}%</td>
+      <td>${escapeHtml(r.low_relevance_flag || "")}</td>
+    </tr>`;
+  });
+  html += "</tbody>";
+  document.getElementById("keywordsTable").innerHTML = html;
+}
+
+function renderOptions(copies, landings){
+  const cs = document.getElementById("copySelect");
+  const ls = document.getElementById("landingSelect");
+  cs.innerHTML = copies.map(c=>`<option value="${c.copy_id}">${escapeHtml(c.copy_name)} — ${escapeHtml(c.headline_1)}</option>`).join("");
+  ls.innerHTML = landings.map(l=>`<option value="${l.landing_id}">${escapeHtml(l.landing_name)}</option>`).join("");
+}
+
+async function saveProfile(){
+  try{
+    const students = document.getElementById("profileStudents").value.split("\n").map(x=>x.trim()).filter(Boolean).slice(0,6);
+    const res = await apiCall("saveGroupProfile", {
+      loginId: groupSession.loginId,
+      groupName: document.getElementById("profileGroupName").value.trim(),
+      details: document.getElementById("profileDetails").value.trim(),
+      students
+    });
+    if(!res.ok) throw new Error(res.error || "Save failed");
+    document.getElementById("profileMsg").textContent = "Profile saved.";
+    await loadRoundData();
+  }catch(e){
+    document.getElementById("profileMsg").textContent = e.message;
+  }
+}
+
+async function submitRound(){
+  try{
+    const res = await apiCall("submitRound", {
+      loginId: groupSession.loginId,
+      selectedKeywords: document.getElementById("selectedKeywords").value,
+      copyId: document.getElementById("copySelect").value,
+      landingId: document.getElementById("landingSelect").value,
+      taNotes: document.getElementById("taNotes").value
+    });
+    if(!res.ok) throw new Error(res.error || "Submit failed");
+    document.getElementById("submitMsg").textContent = "Round submitted.";
+    renderResult(res.data.result);
+    renderLeaderboard("groupLeaderboardTable", res.data.leaderboard, true);
+  }catch(e){
+    document.getElementById("submitMsg").textContent = e.message;
+  }
+}
+
+function renderResult(result){
+  if(!result){
+    document.getElementById("keywordPerfTable").innerHTML = "";
+    return;
+  }
+  document.getElementById("resSpend").textContent = fmtCurrency(result.spend_sgd);
+  document.getElementById("resSales").textContent = Number(result.sales || 0).toLocaleString();
+  document.getElementById("resRoi").textContent = fmtPct(result.roi || 0);
+  document.getElementById("resImp").textContent = Number(result.impressions || 0).toLocaleString();
+  document.getElementById("resClk").textContent = Number(result.clicks || 0).toLocaleString();
+  document.getElementById("resRev").textContent = fmtCurrency(result.revenue_sgd || 0);
+  document.getElementById("resReco").textContent = result.recommendation || "";
+
+  const rows = result.keyword_breakdown || [];
+  let html = "<thead><tr><th>Keyword</th><th>Impressions</th><th>Clicks</th><th>CTR</th><th>Avg CPC</th><th>Spend</th><th>Sales</th></tr></thead><tbody>";
+  rows.forEach(r=>{
+    html += `<tr>
+      <td>${escapeHtml(r.keyword)}</td>
+      <td>${Number(r.impressions||0).toLocaleString()}</td>
+      <td>${Number(r.clicks||0).toLocaleString()}</td>
+      <td>${fmtPct(r.ctr||0)}</td>
+      <td>${fmtCurrency(r.avg_cpc_sgd||0)}</td>
+      <td>${fmtCurrency(r.spend_sgd||0)}</td>
+      <td>${Number(r.sales||0).toLocaleString()}</td>
+    </tr>`;
+  });
+  html += "</tbody>";
+  document.getElementById("keywordPerfTable").innerHTML = html;
+}
+
+function renderLeaderboard(tableId, rows, includeStudents){
+  let html = "<thead><tr><th>Group</th>" + (includeStudents ? "<th>Students</th>" : "") + "<th>Round</th><th>Spend</th><th>Sales</th><th>Impressions</th><th>Clicks</th><th>ROI</th></tr></thead><tbody>";
+  (rows || []).forEach(r=>{
+    html += `<tr>
+      <td>${escapeHtml(r.group_name || "")}</td>
+      ${includeStudents ? `<td>${escapeHtml(r.students || "")}</td>` : ""}
+      <td>${escapeHtml(r.round || "")}</td>
+      <td>${fmtCurrency(r.spend_sgd || 0)}</td>
+      <td>${Number(r.sales || 0).toLocaleString()}</td>
+      <td>${Number(r.impressions || 0).toLocaleString()}</td>
+      <td>${Number(r.clicks || 0).toLocaleString()}</td>
+      <td>${fmtPct(r.roi || 0)}</td>
+    </tr>`;
+  });
+  html += "</tbody>";
+  document.getElementById(tableId).innerHTML = html;
+}
+
+async function adminLogin(){
+  try{
+    const res = await apiCall("adminLogin", {
+      username: document.getElementById("adminUsername").value.trim(),
+      password: document.getElementById("adminPassword").value
+    });
+    if(!res.ok) throw new Error(res.error || "Admin login failed");
+    adminSession = true;
+    document.getElementById("adminLoginMsg").textContent = "Login successful.";
+    showScreen("adminDashboard");
+    await loadAdminOverview();
+  }catch(e){
+    document.getElementById("adminLoginMsg").textContent = e.message;
+  }
+}
+function logoutAdmin(){ adminSession = false; showScreen("adminLoginScreen"); }
+
+async function loadAdminOverview(){
+  try{
+    const res = await apiCall("getAdminOverview", {});
+    if(!res.ok) throw new Error(res.error || "Failed to load admin overview");
+    renderLeaderboard("adminLeaderboardTable", res.data.leaderboard, true);
+
+    let html = "<thead><tr><th>Login ID</th><th>Group Name</th><th>Students</th><th>Details</th><th>Current Round</th><th>Status</th></tr></thead><tbody>";
+    (res.data.groups || []).forEach(g=>{
+      html += `<tr>
+        <td>${escapeHtml(g.login_id)}</td>
+        <td>${escapeHtml(g.group_name)}</td>
+        <td>${escapeHtml((g.students||[]).join(", "))}</td>
+        <td>${escapeHtml(g.details || "")}</td>
+        <td>${escapeHtml(g.current_round || "")}</td>
+        <td>${escapeHtml(g.status || "")}</td>
+      </tr>`;
+    });
+    html += "</tbody>";
+    document.getElementById("adminGroupsTable").innerHTML = html;
+  }catch(e){
+    document.getElementById("manageGroupMsg").textContent = e.message;
+  }
+}
+
+async function createGroup(){
+  try{
+    const res = await apiCall("createGroup", {
+      loginId: document.getElementById("newLoginId").value.trim(),
+      password: document.getElementById("newLoginPassword").value,
+      groupName: document.getElementById("newGroupName").value.trim()
+    });
+    if(!res.ok) throw new Error(res.error || "Create group failed");
+    document.getElementById("createGroupMsg").textContent = "Group created.";
+    await loadAdminOverview();
+  }catch(e){
+    document.getElementById("createGroupMsg").textContent = e.message;
+  }
+}
+async function resetGroupRound(){
+  try{
+    const res = await apiCall("resetGroupRound", { loginId: document.getElementById("manageGroupId").value.trim() });
+    if(!res.ok) throw new Error(res.error || "Reset failed");
+    document.getElementById("manageGroupMsg").textContent = "Group reset to round 1.";
+    await loadAdminOverview();
+  }catch(e){
+    document.getElementById("manageGroupMsg").textContent = e.message;
+  }
+}
+async function deleteGroup(){
+  if(!confirm("Delete this group? This removes the row from Groups and deletes the group's sheet tab.")) return;
+  try{
+    const res = await apiCall("deleteGroup", { loginId: document.getElementById("manageGroupId").value.trim() });
+    if(!res.ok) throw new Error(res.error || "Delete failed");
+    document.getElementById("manageGroupMsg").textContent = "Group deleted.";
+    await loadAdminOverview();
+  }catch(e){
+    document.getElementById("manageGroupMsg").textContent = e.message;
+  }
+}
+
+window.addEventListener("load", init);
+</script>
+</body>
+</html>
