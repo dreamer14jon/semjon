@@ -29,7 +29,7 @@
 <div class="wrap">
   <div class="topbar">
     <div><h1>Performance Marketing Analytics Simulator</h1><div class="muted">Developed by Mr Jonathan and Ms Adeline from School of Business, Singapore Polytechnic.</div></div>
-    <div class="row no-flex"><button class="light" onclick="showScreen('groupLoginScreen')">Group Login</button></div>
+    
   </div>
 
   <div id="groupLoginScreen" class="grid grid-2">
@@ -46,10 +46,10 @@
         <li>There are <b>3 rounds</b>. Each round adds one more bag and more complexity.</li>
         <li>Review the keyword database and ad copy guide before building your plan.</li>
         <li>Choose keywords, landing page per keyword, write ad copy, and allocate budget.</li>
-        <li>There are 3 rounds. Each round is a different bag and different audience context to analyse.</li>
+        <li>There are <b>3 rounds</b>. Each round is a different bag and different audience context to analyse.</li>
         <li>Click <b>Submit Round</b>. When trial mode is on, your submission is saved as a trial. When trial mode is off, it becomes an official submission for admin processing.</li>
       </ol>
-      
+      <div class="note">Admin page is not shown here. Open it manually with <b>#admin</b> if needed.</div>
     </div>
   </div>
 
@@ -211,7 +211,7 @@
 </div>
 
 <script>
-const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbyBUJ9kzGgnW2z8wr8DnLo0jsGD4E2oY9uQ0hAObO3aGsvekcEyzzg6cuvgYzCnFqNerQ/exec";
+const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbwmvJRDopz9sBsaQD86wAl80aRPgJsiA63pCCTAkXFrCUA8Wg3STMhs_Wf_k7C0L7ZJ2w/exec";
 let state = { apiUrl:"", group:null, groupData:null, admin:null, adminData:null };
 let jsonpCounter = 0;
 
